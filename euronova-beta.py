@@ -188,15 +188,15 @@ def local_css():
 
 # Funktion för autentisering
 def authenticate():
-    st.title("Inloggning")
+    st.title("Secure login")
     with st.form("login_form"):
-        password_input = st.text_input("Ange lösenord:", type="password")
-        submit = st.form_submit_button("Logga in")
+        password_input = st.text_input("Password:", type="password")
+        submit = st.form_submit_button("Login")
         if submit:
             if password_input == PASSWORD:
                 st.session_state.authenticated = True
             else:
-                st.error("Fel lösenord. Försök igen.")
+                st.error("Wrong password. Try again.")
 
 # Funktion för att skapa en ny tråd
 def create_thread():
@@ -313,7 +313,7 @@ def main_app():
     # Ställ in sidan med en titel och avatar
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-            <h3 style="margin:0; color: #262626;">Euronova EU-level mapping (beta)</h3> <!-- All text färgad #262626 -->
+            <h3 style="margin:0; color: #262626;">Euronova EU-level mapping (Experimental by Gullers)</h3> <!-- All text färgad #262626 -->
         </div>
         """, unsafe_allow_html=True)
 
