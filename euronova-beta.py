@@ -30,7 +30,6 @@ if 'messages' not in st.session_state:
 if 'all_references' not in st.session_state:
     st.session_state.all_references = []  # Lista av dicts med 'n', 'name', 'description'
 
-# Anpassad CSS för att förbättra UI, inklusive Roboto-font
 def local_css():
     st.markdown(
         """
@@ -43,21 +42,22 @@ def local_css():
             background: #ffffff; 
         }
         .second-color { 
-            background: #ffe9e3; 
+            background: #e8e8e8;  /* Ny bakgrundsfärg för user-bubble */
         }
         .third-color { 
-            background: #ffffff; 
+            background: #f0f2f6;  /* Ny bakgrundsfärg för assistant-bubble */
         }
         .fourth-color { 
-            background: #7c73e6; 
+            background: #254aa5;  /* Ersätter #7c73e6 */
         }
 
         /* Allmän styling */
         body, .stApp, [class*="css"] {
-            background-color: #ffffff !important; /* Ändrad till #ffffff */
-            font-family: 'Roboto', sans-serif; /* Uppdaterad till Roboto */
-            color: #262626; /* All text till #262626 */
+            background-color: #ffffff !important;
+            font-family: 'Roboto', sans-serif;
+            color: #262626;
         }
+
         /* Avatarer */
         .avatar {
             width: 40px;
@@ -65,19 +65,19 @@ def local_css():
             border-radius: 50%;
         }
         .user-avatar {
-            /* Ändrat från bild till färgad cirkel */
-            background-color: #7c73e6; /* .fourth-color */
+            /* Använder fjärde färgen, nu #254aa5 */
+            background-color: #254aa5; 
             width: 40px;
             height: 40px;
             border-radius: 50%;
         }
         .assistant-avatar {
-            /* Assistentens avatarbild */
             content: url("https://i.imgur.com/8Km9tLL.png");
             width: 40px;
             height: 40px;
             border-radius: 50%;
         }
+
         /* Chatbubblor */
         .chat-container {
             display: flex;
@@ -85,7 +85,7 @@ def local_css():
             max-height: 70vh;
             overflow-y: auto;
             padding: 20px;
-            background-color: #ffffff; /* Bakgrund för chatten */
+            background-color: #ffffff;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
@@ -93,26 +93,29 @@ def local_css():
             display: flex;
             align-items: flex-end;
             gap: 10px;
-            margin-bottom: 20px; /* Ökat mellanrum mellan meddelanden */
+            margin-bottom: 20px;
         }
         .user-bubble {
             align-self: flex-end;
-            background-color: #f0f2f6; /* .second-color */
-            color: #262626; /* Textfärg */
+            /* Ny bakgrundsfärg = .second-color => #e8e8e8 */
+            background-color: #e8e8e8; 
+            color: #262626;
             padding: 10px 15px;
             border-radius: 20px;
-            max-width: 100%; /* Begränsa maxbredden */
+            max-width: 100%;
             word-wrap: break-word;
         }
         .assistant-bubble {
             align-self: flex-start;
-            background-color: #ffe9e3; /* .third-color */
-            color: #262626; /* Textfärg */
+            /* Ny bakgrundsfärg = .third-color => #f0f2f6 */
+            background-color: #f0f2f6; 
+            color: #262626;
             padding: 10px 15px;
             border-radius: 20px;
-            max-width: 100%; /* Begränsa maxbredden */
+            max-width: 100%;
             word-wrap: break-word;
         }
+
         /* Referenslistan */
         .references {
             background-color: #ffffff;
@@ -123,7 +126,7 @@ def local_css():
         }
         .references h3 {
             margin-bottom: 10px;
-            color: #262626; /* Textfärg */
+            color: #262626;
         }
         .references ul {
             list-style-type: decimal;
@@ -131,19 +134,21 @@ def local_css():
         }
         .references li {
             margin-bottom: 5px;
-            color: #262626; /* Textfärg */
+            color: #262626;
         }
+
         /* Typing Indicator */
         .typing-indicator {
             display: flex;
             align-items: center;
             gap: 5px;
-            margin-top: 10px; /* Lägg till avstånd ovanför indikatoren */
+            margin-top: 10px;
         }
         .typing-indicator .dot {
             width: 8px;
             height: 8px;
-            background-color: #7c73e6; /* .fourth-color */
+            /* Samma färg som .fourth-color => #254aa5 */
+            background-color: #254aa5;
             border-radius: 50%;
             animation: typing 1.4s infinite both;
         }
@@ -167,6 +172,7 @@ def local_css():
                 opacity: 0.7;
             }
         }
+
         /* Scrollbar styling */
         .chat-container::-webkit-scrollbar {
             width: 8px;
@@ -198,7 +204,6 @@ def authenticate():
             else:
                 st.error("Wrong password. Try again.")
 
-# Funktion för att skapa en ny tråd
 def create_thread():
     headers = {
         "x-api-key": API_KEY,
@@ -219,7 +224,6 @@ def create_thread():
         st.error(f"Fel vid skapande av tråd: {e}")
         return None
 
-# Funktion för att skicka ett meddelande och bearbeta referenser
 def send_message(thread_id, message):
     headers = {
         "x-api-key": API_KEY,
@@ -227,14 +231,13 @@ def send_message(thread_id, message):
     }
     data = {
         "thread_id": thread_id,
-        "message": message  # Skickar meddelandet som en sträng
+        "message": message
     }
     try:
         response = requests.post(SEND_MESSAGE_URL, headers=headers, json=data)
         response.raise_for_status()
         json_response = response.json()
 
-        # Hämta assistentens svar från rätt nyckel
         assistant_response = json_response.get("content") or json_response.get("content_with_references")
         references = json_response.get("references", [])
 
@@ -242,32 +245,21 @@ def send_message(thread_id, message):
             st.error("Assistentens svar saknas i API-svaret.")
             return "Ursäkta, något gick fel.", []
 
-        # Processa referenser och uppdatera markeringarna
         updated_content, new_references = process_references(assistant_response, references)
-
         return updated_content, new_references
     except requests.exceptions.RequestException as e:
         st.error(f"Fel vid skickande av meddelande: {e}")
         return "Ursäkta, något gick fel.", []
 
-# Funktion för att processa referenser och uppdatera markeringar
 def process_references(content_with_refs, references):
-    """
-    Ersätt [[n]] i content_with_refs med globala referensnummer
-    och uppdatera den globala referenslistan.
-    """
-    # Hitta alla [[n]] marker
     markers = re.findall(r'\[\[(\d+)\]\]', content_with_refs)
-
     updated_content = content_with_refs
 
     for marker in markers:
-        index = int(marker)  # 0-baserad index
+        index = int(marker)
         if index < len(references):
             ref = references[index]
-            ref_key = ref['url']  # Unik identifierare
-
-            # Kontrollera om referensen redan finns
+            ref_key = ref['url']
             existing_ref = next((item for item in st.session_state.all_references if item['url'] == ref_key), None)
             if existing_ref:
                 global_n = existing_ref['n']
@@ -278,26 +270,14 @@ def process_references(content_with_refs, references):
                     "name": ref['name'],
                     "description": extract_description(ref['name'], ref['url'])
                 })
-
-            # Ersätt [[n]] med [[global_n]]
             updated_content = updated_content.replace(f'[[{marker}]]', f'[[{global_n}]]')
 
     return updated_content, []
 
-# Funktion för att extrahera beskrivning från referensnamn
 def extract_description(name, url):
-    """
-    Generera en beskrivning baserat på referensens namn och URL.
-    Detta kan anpassas för bättre beskrivningar.
-    """
-    # Här kan du lägga till logik för att generera mer beskrivande texter
     return f"{name}."
 
-# Funktion för att omvandla messages till en sträng
 def format_chat_history(messages):
-    """
-    Konvertera listan av messages till en sträng för prompten.
-    """
     history = ""
     for msg in messages:
         if msg["role"] == "user":
@@ -306,18 +286,15 @@ def format_chat_history(messages):
             history += f"AI: {msg['content']}\n"
     return history.strip()
 
-# Funktion för huvudinnehållet i appen
 def main_app():
     local_css()
 
-    # Ställ in sidan med en titel och avatar
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-            <h3 style="margin:0; color: #262626;">Euronova EU-level mapping (Experimental by Gullers)</h3> <!-- All text färgad #262626 -->
+            <h3 style="margin:0; color: #262626;">Euronova EU-level mapping (Experimental by Gullers)</h3>
         </div>
         """, unsafe_allow_html=True)
 
-    # Initialisera tråd om ingen tråd ID finns
     if st.session_state.thread_id is None:
         with st.spinner("Skapar chatttråd..."):
             thread_id = create_thread()
@@ -326,7 +303,6 @@ def main_app():
             else:
                 st.stop()
 
-    # Skapa en container för chatten
     chat_container = st.container()
     with chat_container:
         for msg in st.session_state.messages:
@@ -345,14 +321,11 @@ def main_app():
                     </div>
                     """, unsafe_allow_html=True)
 
-    # Skapa en placeholder för typing indicator placerad under chat-container
     typing_placeholder = st.empty()
 
-    # Ta emot användarens inmatning
     user_input = st.chat_input("Ask a question...")
 
     if user_input:
-        # Lägg till användarens meddelande till historiken
         st.session_state.messages.append({"role": "user", "content": user_input})
         with chat_container:
             st.markdown(f"""
@@ -362,7 +335,6 @@ def main_app():
                 </div>
                 """, unsafe_allow_html=True)
 
-        # Visa typing indicator
         with typing_placeholder.container():
             st.markdown("""
                 <div class="typing-indicator">
@@ -372,13 +344,10 @@ def main_app():
                 </div>
                 """, unsafe_allow_html=True)
 
-        # Skicka meddelandet till API:et och få assistentens svar
         assistant_reply, _ = send_message(st.session_state.thread_id, user_input)
 
-        # Ta bort typing indicator
         typing_placeholder.empty()
 
-        # Lägg till assistentens svar till historiken
         st.session_state.messages.append({"role": "assistant", "content": assistant_reply})
         with chat_container:
             st.markdown(f"""
@@ -388,7 +357,6 @@ def main_app():
                 </div>
                 """, unsafe_allow_html=True)
 
-    # Visa referenslistan om det finns några referenser
     if st.session_state.all_references:
         st.markdown("""
             <div class="references">
@@ -399,7 +367,6 @@ def main_app():
             st.markdown(f"<li><strong>{ref['n']}. {ref['name']}</strong>. {ref['description']}</li>", unsafe_allow_html=True)
         st.markdown("</ul></div>", unsafe_allow_html=True)
 
-# Konditionell Rendering baserat på autentiseringsstatus
 if not st.session_state.authenticated:
     authenticate()
 else:
