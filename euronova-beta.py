@@ -254,25 +254,29 @@ def send_message(thread_id, message):
 def process_references(content_with_refs, references):
     markers = re.findall(r'\[\[(\d+)\]\]', content_with_refs)
     updated_content = content_with_refs
+    new_refs = []
 
     for marker in markers:
-        index = int(marker)
+        index = int(marker) - 1
         if index < len(references):
             ref = references[index]
             ref_key = ref['url']
-            existing_ref = next((item for item in st.session_state.all_references if item['url'] == ref_key), None)
+            existing_ref = next((item for item in st.session_state.all_references if item.get('url') == ref_key), None)
             if existing_ref:
                 global_n = existing_ref['n']
             else:
                 global_n = len(st.session_state.all_references) + 1
-                st.session_state.all_references.append({
+                new_ref = {
                     "n": global_n,
                     "name": ref['name'],
-                    "description": extract_description(ref['name'], ref['url'])
-                })
+                    "description": extract_description(ref['name'], ref['url']),
+                    "url": ref['url'],
+                }
+                st.session_state.all_references.append(new_ref)
+                new_refs.append(new_ref)
             updated_content = updated_content.replace(f'[[{marker}]]', f'[[{global_n}]]')
 
-    return updated_content, []
+    return updated_content, new_refs
 
 def extract_description(name, url):
     return f"{name}."
